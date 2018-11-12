@@ -216,12 +216,11 @@ keytab: /etc/libvirt/krb5.tab
 
 ​	这里涉及到kerberos的配置和使用。[libvirt](https://libvirt.org/auth.html#ACL_server_sasl)
 
-# TOBECONTINU。。。。
+# TOBE CONTINUE。。。。
 
 
 
-  
---------------------- 
+---------------------
 
 
 
