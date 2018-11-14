@@ -8,7 +8,7 @@
 
 - windows下安装Ruby
 
-  在Windows下安装ruby，只需要在官网下载[rubyinstaller](https://rubyinstaller.org/downloads/) 直接安装即可，注意由于之后的jekyll需要使用到make，所以在安装ruby的时候选择同时安装msys和MinGW，安装时选择3再回车。
+  在Windows下安装ruby，只需要在官网下载[rubyinstaller+dev](https://rubyinstaller.org/downloads/) 直接安装即可，注意由于之后的jekyll需要使用到make，所以在安装ruby的时候选择同时安装msys和MinGW，安装时选择3再回车。
 
 - Linux下安装Ruby
 
