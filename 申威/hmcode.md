@@ -28,6 +28,16 @@ client version 2.17
 
 ## 2、扫描服务器维护端口号
 
+​	***保证服务器为正常开启状态。***
+
+​	**注意**：在这里务必保证你的网络设置是正确的，虚拟机使用桥接模式，同时设置ip到同一网段（192.168.1.x），一般推荐为192.168.1.1或192.168.1.2。
+
+``` shell
+$ ifconfig eth0 192.168.1.2
+$ ip addr
+$ ping bmcx
+```
+
 ​	连接服务器维护端口，端口bmc号（可以认为是一个固定的服务器ip）可以通过打开服务器机盖查看，也可通过脚本扫描。
 
 ``` shell
@@ -38,11 +48,11 @@ $ ./bmc.sh 200
 
 > 后面的数字代表的意思是从哪个端口号开始扫描，灵活的使用可以缩短扫描时间。
 
-​	获取到bmc号（假设为x）之后，将这个bmc号配置到hosts：
+​	获取到bmc号（假设为x）之后，将这个bmc号配置到hosts ：
 
 ``` shell
 $ echo "192.168.1.x bmcx" >> /etc/hosts
-$ echo ping bmcx
+$ ping bmcx
 ```
 
 ## 3、烧入hmcode
@@ -50,9 +60,15 @@ $ echo ping bmcx
 ​	配置好环境之后，烧入就简单多了：
 
 ``` shell
-$ loadhmcode bmcx hmcode.nh
+$ loadhmcode -o x:0:0:0 -f hmcode.nh
 $ reboot
 ```
 
+​	正确烧入后运行结果如下：
+
+​             ![hmcode烧入结果](G:\Notes\申威\hmcode-1.png) 
+
 ## 4、检查烧入结果
+
+
 
