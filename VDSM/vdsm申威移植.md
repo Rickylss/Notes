@@ -1,5 +1,4 @@
 ---
-layout: post
 title: "vdsm申威移植"
 date: 2018-11-16 11:48:20 +0800
 categories: [libvirt, SW]
@@ -232,7 +231,11 @@ $ systemctl status vdsmd
 $ vdsm-tool configure --force
 ```
 
-​	这时会出现用户和用户组不存在的报错，以及qemu.conf和libvirtd.conf配置冲突的报错。要解决用户与用户组不存在的报错，同样需要spec文件的帮助：
+​	这时会出现用户和用户组不存在的报错，qemu.conf和libvirtd.conf配置冲突的报错；以及证书文件无法创建的错。
+
+### 4.1、用户与组不存在的问题
+
+​	要解决用户与用户组不存在的报错，同样需要spec文件的帮助：
 
 ``` shell
 $ cat vdsm.spec | grep -C 4 "useradd"
@@ -246,13 +249,49 @@ export LC_ALL=C
 /usr/sbin/usermod -a -G %{cdrom_group} %{qemu_user}
 ```
 
-​	spec就是在这里添加了vdsm的用户和组（注意：qemu、kvm和sanlock的用户和组，本应该由kvm模块和对应的软件包自行安装，但由于申威平台暂不成熟，并没有生成对应的用户和组，因此还是需要使用useradd命令手动安装）。将cat出来的信息添加到vdsmInstall.sh的脚本中，替换变量。运行脚本，此时用户添加成功。
+​	spec就是在这里添加了vdsm的用户和组（注意：qemu、kvm和sanlock的用户和组，本应该由kvm模块和对应的软件包自行安装，但由于申威平台暂不成熟，并没有生成对应的用户和组，因此还是需要使用useradd命令手动安装）。将cat出来的信息添加到`vdsmInstall.sh`的脚本中，替换变量。运行脚本，此时用户添加成功。
 
-​	解决文件配置冲突，只需要按提示要求修改配置文件即可。 
+### 4.2、qemu.conf和libvirtd.conf配置冲突问题
+
+​	**解决文件配置冲突，只需要按提示要求修改配置文件即可**。 
+
+### 4.3、证书文件无法创建问题
+
+​	证书文件无法创建是由于申威平台缺少一个关键的命令--restorecon，目前的解决方法是拷贝vdsm.tar到`/etc/pki`目录下并解压，vdsm.tar中就包含了这些证书文件。
+
+### 4.4、修改sasl2
+
+​	完成vdsm初始化之后，运行vdsmd，libvirt将会出现错误，使用如下方式测试：
+
+```shell
+$ virsh -c qemu+tcp://127.0.0.1/system
+错误：连接到管理程序失败
+错误：无法在 '127.0.0.1 :16509' 连接到服务器: 拒绝连接
+```
+
+​	这是由于vdsm软件包中默认安装sasl时使用的mech_list是digest-md5，但是我们自己安装的sasl中使用的是gssapi，打开`/etc/sasl2/libvirt.conf`修改如下：
+
+``` shell
+# Default to a simple username+password mechanism
+mech_list: digest-md5
+sasldb_path: /etc/libvirt/passwd.db
+```
+
+​	重启服务，测试virsh连接成功。重启vdsmd。
 
 ## 5、配置申威内核选项
 
-## 6、vdsClients测试
+## 6、vdsClient测试
+
+​	测试成功运行的vdsmd服务是否可用，可以使用vdsClient，该命令可以直接调用vdsmAPI，详细使用方式可参考[vdsClient](https://www.ovirt.org/develop/developer-guide/vdsm/vdsclient/)。
+
+``` shell
+$ vdsClients -s localhost list
+```
+
+​	如果移植成功，那么该命令返回主机上的虚拟机列表。
+
+> 目前该命令无法使用，是由于xmlrpc未能配置成功，xmlrpc为vdsm与engine或vdsClient等上层管理平台通信方式。
 
 
 
